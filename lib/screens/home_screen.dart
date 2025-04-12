@@ -89,30 +89,31 @@ class _HomeScreenState extends State<HomeScreen> {
       body: Padding(
         padding: EdgeInsets.all(12),
         child: GridView.builder(
-          itemCount: filtered.length,
-          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 2,
-            mainAxisSpacing: 12,
-            crossAxisSpacing: 12,
-            childAspectRatio: 0.7,
-          ),
-          itemBuilder: (context, index) {
-            final movie = filtered[index];
-            return GestureDetector(
-              onTap: () async {
-                await Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (ctx) => MovieDetailScreen(
-                      movie: movie,
-                      onUpdate: () => setState(() {}),
-                    ),
-                  ),
-                );
-              },
-              child: Column(
+            itemCount: filtered.length,
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2,
+              mainAxisSpacing: 12,
+              crossAxisSpacing: 12,
+              childAspectRatio: 0.7,
+            ),
+            itemBuilder: (context, index) {
+              final movie = filtered[index];
+              return Column(
                 children: [
-                  MovieCard(movie: movie, onTap: () {}),
+                  MovieCard(
+                    movie: movie,
+                    onTap: () async {
+                      await Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (ctx) => MovieDetailScreen(
+                            movie: movie,
+                            onUpdate: () => setState(() {}),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
                   SizedBox(height: 8),
                   Text(
                     movie.title,
@@ -120,10 +121,8 @@ class _HomeScreenState extends State<HomeScreen> {
                     style: Theme.of(context).textTheme.bodyMedium,
                   ),
                 ],
-              ),
-            );
-          },
-        ),
+              );
+            }),
       ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: currentIndex,
