@@ -1,18 +1,19 @@
 import 'package:flutter/material.dart';
 import '../models/movie.dart';
+import '../providers/movie_provider.dart';
 
 class MovieDetailScreen extends StatefulWidget {
   final Movie movie;
-  final VoidCallback onUpdate;
 
-  MovieDetailScreen({required this.movie, required this.onUpdate});
+  const MovieDetailScreen({super.key, required this.movie});
 
   @override
   State<MovieDetailScreen> createState() => _MovieDetailScreenState();
 }
 
 class _MovieDetailScreenState extends State<MovieDetailScreen> {
-  int rating = 3;
+  late int rating;
+  late ValueNotifier<List<Movie>> movies;
 
   @override
   void initState() {
@@ -21,45 +22,63 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    movies = MovieProvider.of(context);
+  }
+
+  void updateMovie(Movie updatedMovie) {
+    final updatedMovies = movies.value.map((m) {
+      if (m == widget.movie) return updatedMovie;
+      return m;
+    }).toList();
+    movies.value = updatedMovies;
+  }
+
+  @override
   Widget build(BuildContext context) {
-    bool canRate = widget.movie.isWatched;
+    final movie = widget.movie;
+    final canRate = movie.isWatched;
 
     return Scaffold(
-      appBar: AppBar(title: Text(widget.movie.title)),
+      appBar: AppBar(
+        title: Text(movie.title),
+      ),
       body: SingleChildScrollView(
         padding: EdgeInsets.fromLTRB(16, 16, 16, 100),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Image.network(widget.movie.posterUrl),
+            Image.network(
+              movie.posterUrl,
+              height: 300,
+              fit: BoxFit.cover,
+            ),
             SizedBox(height: 16),
-            Text(widget.movie.title,
-                style: Theme.of(context).textTheme.headlineMedium),
+            Text(
+              movie.title,
+              style: Theme.of(context).textTheme.headlineSmall,
+            ),
             SizedBox(height: 8),
-            Text(widget.movie.year),
+            Text(movie.year),
             SizedBox(height: 16),
-            Text(widget.movie.description),
+            Text(movie.description),
             SizedBox(height: 24),
             ElevatedButton(
               onPressed: () {
-                setState(() {
-                  if (widget.movie.isWatched) {
-                    widget.movie.isWatched = false;
-                    widget.movie.rating = null;
-                  } else {
-                    widget.movie.isWatched = true;
-                    widget.movie.rating = rating.toString();
-                  }
-                });
-                widget.onUpdate();
+                final updated = movie.copyWith(
+                  isWatched: !movie.isWatched,
+                  rating: !movie.isWatched ? rating.toString() : null,
+                );
+                updateMovie(updated);
               },
-              child: Text(widget.movie.isWatched
-                  ? 'Вернуть в непросмотренные'
-                  : 'Посмотрено'),
+              child: Text(
+                  movie.isWatched ? 'Вернуть в непросмотренные' : 'Посмотрено'),
             ),
             if (canRate)
               Column(
                 children: [
-                  SizedBox(height: 16),
+                  SizedBox(height: 24),
                   Text('Оцените фильм'),
                   SizedBox(height: 12),
                   Row(
@@ -72,9 +91,10 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
                             ? () {
                                 setState(() {
                                   rating--;
-                                  widget.movie.rating = rating.toString();
+                                  final updated =
+                                      movie.copyWith(rating: rating.toString());
+                                  updateMovie(updated);
                                 });
-                                widget.onUpdate();
                               }
                             : null,
                         icon: Icon(Icons.remove),
@@ -85,9 +105,10 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
                             ? () {
                                 setState(() {
                                   rating++;
-                                  widget.movie.rating = rating.toString();
+                                  final updated =
+                                      movie.copyWith(rating: rating.toString());
+                                  updateMovie(updated);
                                 });
-                                widget.onUpdate();
                               }
                             : null,
                         icon: Icon(Icons.add),
@@ -98,13 +119,6 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
                   ),
                 ],
               ),
-            SizedBox(height: 40),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              child: Text('Готово'),
-            ),
           ],
         ),
       ),

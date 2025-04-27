@@ -7,12 +7,19 @@ class MovieCreateScreen extends StatefulWidget {
 }
 
 class _MovieCreateScreenState extends State<MovieCreateScreen> {
-  final formKey = GlobalKey<FormState>();
+  final titleController = TextEditingController();
+  final yearController = TextEditingController();
+  final descriptionController = TextEditingController();
+  final posterUrlController = TextEditingController();
 
-  String title = '';
-  String posterUrl = '';
-  String year = '';
-  String description = '';
+  @override
+  void dispose() {
+    titleController.dispose();
+    yearController.dispose();
+    descriptionController.dispose();
+    posterUrlController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -20,44 +27,47 @@ class _MovieCreateScreenState extends State<MovieCreateScreen> {
       appBar: AppBar(title: Text('Добавить фильм')),
       body: Padding(
         padding: EdgeInsets.all(16),
-        child: Form(
-          key: formKey,
-          child: Column(
-            children: [
-              TextFormField(
-                decoration: InputDecoration(labelText: 'Название'),
-                onSaved: (value) => title = value ?? '',
-              ),
-              TextFormField(
-                decoration: InputDecoration(labelText: 'Год'),
-                onSaved: (value) => year = value ?? '',
-              ),
-              TextFormField(
-                decoration: InputDecoration(labelText: 'Ссылка на постер'),
-                onSaved: (value) => posterUrl = value ?? '',
-              ),
-              TextFormField(
-                decoration: InputDecoration(labelText: 'Описание'),
-                onSaved: (value) => description = value ?? '',
-              ),
-              SizedBox(height: 24),
-              ElevatedButton(
-                onPressed: () {
-                  formKey.currentState?.save();
+        child: Column(
+          children: [
+            TextField(
+              controller: titleController,
+              decoration: InputDecoration(labelText: 'Название фильма'),
+            ),
+            SizedBox(height: 8),
+            TextField(
+              controller: yearController,
+              decoration: InputDecoration(labelText: 'Год выпуска'),
+            ),
+            SizedBox(height: 8),
+            TextField(
+              controller: descriptionController,
+              decoration: InputDecoration(labelText: 'Описание'),
+            ),
+            SizedBox(height: 8),
+            TextField(
+              controller: posterUrlController,
+              decoration: InputDecoration(labelText: 'URL постера'),
+            ),
+            Spacer(),
+            ElevatedButton(
+              onPressed: () {
+                if (titleController.text.isNotEmpty &&
+                    yearController.text.isNotEmpty &&
+                    descriptionController.text.isNotEmpty) {
                   Navigator.pop(
                     context,
                     Movie(
-                      title: title,
-                      year: year,
-                      posterUrl: posterUrl,
-                      description: description,
+                      title: titleController.text,
+                      year: yearController.text,
+                      description: descriptionController.text,
+                      posterUrl: posterUrlController.text,
                     ),
                   );
-                },
-                child: Text('Создать'),
-              ),
-            ],
-          ),
+                }
+              },
+              child: Text('Добавить'),
+            ),
+          ],
         ),
       ),
     );
